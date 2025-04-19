@@ -8,8 +8,9 @@ interface ExcelTableProps {
 
 export default function ExcelTable({ rows, onExportCSV }: ExcelTableProps) {
   return (
-    <>
-      <div className="overflow-x-auto">
+    <div className="flex flex-col h-full">
+      {/* Table Container with fixed height */}
+      <div className="flex-1 overflow-auto" style={{ height: 'calc(100vh - 200px)' }}>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -54,6 +55,8 @@ export default function ExcelTable({ rows, onExportCSV }: ExcelTableProps) {
           </tbody>
         </table>
       </div>
+      
+      {/* Footer */}
       <div className="bg-gray-50 px-6 py-3 border-t flex justify-between items-center">
         <div className="text-sm text-gray-500">
           Showing {rows.length} rows
@@ -67,6 +70,6 @@ export default function ExcelTable({ rows, onExportCSV }: ExcelTableProps) {
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 } 
