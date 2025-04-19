@@ -5,14 +5,22 @@ import * as XLSX from 'xlsx';
 import { ExcelData } from './types';
 import ExcelSection from './ExcelSection';
 import ExcelRightPanel from './ExcelRightPanel';
-import ExcelLeftPanel from './ExcelLeftPanel';
+import ExcelLeftPanel, { ContentType } from './ExcelLeftPanel';
+import ExcelAnalysisResults from './ExcelAnalysisResults';
+import ExcelMainPanel from './ExcelMainPanel';
 import { useExcelProcessor } from '../hooks/useExcelProcessor';
 import { useFileHandler } from '../hooks/useFileHandler';
+import DuplicateEntriesResults from './DuplicateEntriesResults';
 
 export default function ExcelUpload() {
   const [sheetIndex, setSheetIndex] = useState<number>(0);
   const [isPanelVisible, setIsPanelVisible] = useState(true);
-  const [showSections, setShowSections] = useState(false);
+  const [activeContentType, setActiveContentType] = useState<ContentType>(ContentType.SECTIONS);
+  const [analysisResults, setAnalysisResults] = useState<{
+    key: string;
+    column: string;
+    sections: string[];
+  }[]>([]);
   
   const {
     sections,
@@ -36,7 +44,7 @@ export default function ExcelUpload() {
         throw new Error('No valid sections found in the Excel file. Please check the debug information below for details.');
       }
       setSections(processedSections);
-      setShowSections(true);
+      setActiveContentType(ContentType.SECTIONS);
     } catch (err) {
       console.error('Error processing workbook:', err);
       throw err;
@@ -82,45 +90,35 @@ export default function ExcelUpload() {
     linkElement.click();
   };
 
+  const handleAnalyzeData = (results: {
+    key: string;
+    column: string;
+    sections: string[];
+  }[]) => {
+    setAnalysisResults(results);
+  };
+
   return (
     <div className="flex h-full">
       {/* Left Panel */}
       <ExcelLeftPanel
-        showSections={showSections}
-        onToggleSections={() => setShowSections(!showSections)}
+        activeContentType={activeContentType}
+        onContentTypeChange={setActiveContentType}
         sections={sections}
         excelData={excelData}
+        onAnalyzeData={handleAnalyzeData}
       />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto ml-64">
-        <div className={`p-6 ${isPanelVisible ? "pr-80" : ""}`}>
-          {isLoading && (
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700 mx-auto"></div>
-              <p className="mt-2 text-sm text-slate-400">Processing file...</p>
-            </div>
-          )}
-          
-          {error && (
-            <div className="mb-4 p-4 bg-red-900/50 text-red-200 rounded-md">
-              <p className="text-sm">{error}</p>
-            </div>
-          )}
-          
-          {showSections && sections.length > 0 && (
-            <div className="space-y-8">
-              {sections.map((section, sectionIndex) => (
-                <ExcelSection
-                  key={sectionIndex}
-                  section={section}
-                  onToggle={() => toggleSection(sectionIndex)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      <ExcelMainPanel
+        isLoading={isLoading}
+        error={error}
+        sections={sections}
+        activeContentType={activeContentType}
+        analysisResults={analysisResults}
+        isPanelVisible={isPanelVisible}
+        onToggleSection={toggleSection}
+      />
 
       {/* Right Panel */}
       <ExcelRightPanel
