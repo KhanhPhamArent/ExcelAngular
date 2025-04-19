@@ -41,7 +41,7 @@ export const useExcelViewer = () => {
         
         // Start a new section
         currentSection = {
-          title: row[1]?.toString() || 'Untitled Section',
+          title: `Section ${i + 1}: ${row[1]?.toString() || 'Untitled Section'}`,
           rows: []
         };
         continue;

@@ -1,6 +1,7 @@
 export interface ExcelRow {
   stt: number | string;
   key: string;
+  excelRowIndex?: number;
   [key: string]: any;
 }
 

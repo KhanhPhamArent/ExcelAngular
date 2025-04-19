@@ -18,12 +18,12 @@ export const useExcelProcessor = () => {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
       if (!row || row.length === 0) {
-        debugMessages.push(`Row ${i + 1}: Empty row, skipping`);
+        debugMessages.push(`Row ${i+1}: Empty row, skipping`);
         continue;
       }
 
       const firstCell = (row[0]?.toString() || '').trim();
-      debugMessages.push(`Row ${i + 1}: First cell content: "${firstCell}"`);
+      debugMessages.push(`Row ${i+1}: First cell content: "${firstCell}"`);
       
       const isNumber = !isNaN(Number(firstCell)) && firstCell !== '';
       
@@ -37,7 +37,7 @@ export const useExcelProcessor = () => {
           }
           
           currentSection = {
-            title: `Section ${sections.length + 1}`,
+            title: `Row ${i+1}`, // Use the actual Excel row number
             rows: [],
             isCollapsed: true
           };
@@ -48,6 +48,7 @@ export const useExcelProcessor = () => {
           const rowData: ExcelRow = {
             stt: sttValue,
             key: row[1]?.toString() || '',
+            excelRowIndex: i+1 // Store the actual Excel row number
           };
           
           for (let j = 2; j < row.length; j++) {
@@ -60,7 +61,7 @@ export const useExcelProcessor = () => {
           debugMessages.push(`Added row to section ${currentSection.title}`);
         }
       } else if (firstCell) {
-        debugMessages.push(`Row ${i + 1}: Not a number, skipping: "${firstCell}"`);
+        debugMessages.push(`Row ${i+1}: Not a number, skipping: "${firstCell}"`);
       }
     }
     
@@ -93,16 +94,14 @@ export const useExcelProcessor = () => {
     const sheetName = workbook.SheetNames[validSheetIndex];
     const worksheet = workbook.Sheets[sheetName];
     
+    // Get the raw rows without filtering
     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[];
-    const filteredRows = rows.filter(row => 
-      row.some((cell: unknown) => cell !== null && cell !== undefined && cell !== '')
-    );
     
-    if (filteredRows.length < 2) {
+    if (rows.length < 2) {
       throw new Error('Excel file must contain at least a header row and one data row');
     }
 
-    return processExcelData(filteredRows, workbook.SheetNames[validSheetIndex]);
+    return processExcelData(rows, workbook.SheetNames[validSheetIndex]);
   };
 
   return {

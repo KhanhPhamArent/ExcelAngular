@@ -6,6 +6,19 @@ interface ExcelTableProps {
   onExportCSV: (e: React.MouseEvent) => void;
 }
 
+// Helper function to convert column index to Excel-style column name
+const getExcelColumnName = (index: number): string => {
+  let columnName = '';
+  let tempIndex = index + 2;
+  
+  while (tempIndex >= 0) {
+    columnName = String.fromCharCode(65 + (tempIndex % 26)) + columnName;
+    tempIndex = Math.floor(tempIndex / 26) - 1;
+  }
+  
+  return columnName;
+};
+
 export default function ExcelTable({ rows, onExportCSV }: ExcelTableProps) {
   return (
     <div className="flex flex-col h-full">
@@ -25,7 +38,7 @@ export default function ExcelTable({ rows, onExportCSV }: ExcelTableProps) {
                   key={i} 
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50"
                 >
-                  {String.fromCharCode(67 + i)}
+                  {getExcelColumnName(i)}
                 </th>
               ))}
             </tr>
