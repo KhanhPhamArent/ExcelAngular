@@ -1,10 +1,15 @@
 import React from 'react';
 import { ExcelData, Section } from '../types/excel';
+import ShowSectionsButton from './buttons/ShowSectionsButton';
+import FindDuplicatesButton from './buttons/FindDuplicatesButton';
+import StatsDisplay from './buttons/StatsDisplay';
+import CalculateSalaryButton from './buttons/CalculateSalaryButton';
 
 // Define content types as an enum for better type safety
 export enum ContentType {
   SECTIONS = 'sections',
   DUPLICATES = 'duplicates',
+  SALARY = 'salary',
   // Add more content types here in the future
 }
 
@@ -85,34 +90,31 @@ export default function ExcelLeftPanel({
   return (
     <div className="fixed left-0 top-0 h-screen w-64 bg-slate-800 dark:bg-slate-900 p-4 border-r border-slate-700 z-10">
       <div className="space-y-4">
-        <button
-          onClick={() => onContentTypeChange(ContentType.SECTIONS)}
-          className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
-            activeContentType === ContentType.SECTIONS 
-              ? 'bg-blue-700 text-white' 
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
-        >
-          Show Sections
-        </button>
+        <ShowSectionsButton 
+          activeContentType={activeContentType}
+          onContentTypeChange={onContentTypeChange}
+        />
         
-        <button
-          onClick={findDuplicateEntriesAcrossSections}
-          className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
-            activeContentType === ContentType.DUPLICATES 
-              ? 'bg-green-700 text-white' 
-              : 'bg-green-600 text-white hover:bg-green-700'
-          }`}
-        >
-          Find Duplicates
-        </button>
+        <FindDuplicatesButton 
+          activeContentType={activeContentType}
+          onContentTypeChange={onContentTypeChange}
+          sections={sections}
+          excelData={excelData}
+          onAnalyzeData={onAnalyzeData}
+        />
         
-        {sections.length > 0 && (
-          <div className="mt-4 text-slate-300 text-sm">
-            <p>Total Sections: {sections.length}</p>
-            <p>Total Rows: {excelData?.metadata.totalRows || 0}</p>
-          </div>
-        )}
+        <CalculateSalaryButton
+          activeContentType={activeContentType}
+          onContentTypeChange={onContentTypeChange}
+          sections={sections}
+          excelData={excelData}
+          onAnalyzeData={onAnalyzeData}
+        />
+        
+        <StatsDisplay 
+          sections={sections}
+          excelData={excelData}
+        />
       </div>
     </div>
   );

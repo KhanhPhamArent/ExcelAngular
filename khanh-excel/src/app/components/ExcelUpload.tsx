@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx';
 import { ExcelData } from './types';
 import ExcelSection from './ExcelSection';
 import ExcelRightPanel from './ExcelRightPanel';
-import ExcelLeftPanel, { ContentType } from './ExcelLeftPanel';
+import ExcelLeftPanel, { ContentType } from '@/app/components/ExcelLeftPanel';
 import ExcelAnalysisResults from './ExcelAnalysisResults';
 import ExcelMainPanel from './ExcelMainPanel';
 import { useExcelProcessor } from '../hooks/useExcelProcessor';
