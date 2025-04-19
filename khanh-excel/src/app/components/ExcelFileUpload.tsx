@@ -31,6 +31,11 @@ export default function ExcelFileUpload({
     }
   };
 
+  const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const event = { target: { value: e.target.value } } as React.ChangeEvent<HTMLInputElement>;
+    onSheetChange(event);
+  };
+
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -102,9 +107,15 @@ export default function ExcelFileUpload({
 
       {availableSheets.length > 0 && (
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">
-            Sheet Selection
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-gray-700">
+              Sheet Selection
+            </label>
+            <span className="text-xs text-gray-500">
+              Sheet {sheetIndex + 1} of {availableSheets.length}
+            </span>
+          </div>
+          
           <div className="flex items-center space-x-2">
             <button
               onClick={handlePrevSheet}
@@ -113,9 +124,20 @@ export default function ExcelFileUpload({
             >
               ←
             </button>
-            <div className="flex-1 text-center text-sm text-gray-600 bg-gray-50 p-2 rounded-md">
-              {availableSheets[sheetIndex] || 'None'}
-            </div>
+            
+            <select
+              value={sheetIndex}
+              onChange={handleDropdownChange}
+              disabled={isLoading}
+              className="flex-1 text-sm text-gray-600 bg-gray-50 p-2 rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {availableSheets.map((sheet, index) => (
+                <option key={index} value={index}>
+                  {sheet}
+                </option>
+              ))}
+            </select>
+            
             <button
               onClick={handleNextSheet}
               disabled={sheetIndex === availableSheets.length - 1 || isLoading}

@@ -6,6 +6,8 @@ export const useExcelProcessor = () => {
   const [sections, setSections] = useState<Section[]>([]);
   const [excelData, setExcelData] = useState<ExcelData | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
+  const [processedSheets, setProcessedSheets] = useState<Map<number, Section[]>>(new Map());
+  const [currentWorkbook, setCurrentWorkbook] = useState<XLSX.WorkBook | null>(null);
 
   const processExcelData = (rows: any[], fileName: string): Section[] => {
     console.log('Processing rows:', rows);
@@ -37,7 +39,7 @@ export const useExcelProcessor = () => {
           }
           
           currentSection = {
-            title: `Row ${i+1}`, // Use the actual Excel row number
+            title: `Row ${i+1}`,
             rows: [],
             isCollapsed: true
           };
@@ -48,7 +50,7 @@ export const useExcelProcessor = () => {
           const rowData: ExcelRow = {
             stt: sttValue,
             key: row[1]?.toString() || '',
-            excelRowIndex: i+1 // Store the actual Excel row number
+            excelRowIndex: i+1
           };
           
           for (let j = 2; j < row.length; j++) {
@@ -90,7 +92,18 @@ export const useExcelProcessor = () => {
   };
 
   const processWorkbook = (workbook: XLSX.WorkBook, sheetIndex: number): Section[] => {
+    // Store the workbook for future use
+    setCurrentWorkbook(workbook);
+    
     const validSheetIndex = Math.min(Math.max(0, sheetIndex), workbook.SheetNames.length - 1);
+    
+    // Check if we already have this sheet processed
+    if (processedSheets.has(validSheetIndex)) {
+      const cachedSections = processedSheets.get(validSheetIndex)!;
+      setSections(cachedSections);
+      return cachedSections;
+    }
+    
     const sheetName = workbook.SheetNames[validSheetIndex];
     const worksheet = workbook.Sheets[sheetName];
     
@@ -101,7 +114,21 @@ export const useExcelProcessor = () => {
       throw new Error('Excel file must contain at least a header row and one data row');
     }
 
-    return processExcelData(rows, workbook.SheetNames[validSheetIndex]);
+    const sections = processExcelData(rows, workbook.SheetNames[validSheetIndex]);
+    
+    // Cache the processed sections
+    const newProcessedSheets = new Map(processedSheets);
+    newProcessedSheets.set(validSheetIndex, sections);
+    setProcessedSheets(newProcessedSheets);
+    
+    return sections;
+  };
+
+  const changeSheet = (sheetIndex: number): Section[] => {
+    if (!currentWorkbook) {
+      throw new Error('No workbook loaded');
+    }
+    return processWorkbook(currentWorkbook, sheetIndex);
   };
 
   return {
@@ -109,6 +136,7 @@ export const useExcelProcessor = () => {
     excelData,
     debugInfo,
     processWorkbook,
+    changeSheet,
     setSections
   };
 }; 

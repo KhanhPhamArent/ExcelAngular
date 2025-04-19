@@ -56,12 +56,45 @@ export default function ExcelUpload() {
     if (!isNaN(value) && value >= 0) {
       setSheetIndex(value);
       if (file) {
-        const input = document.createElement('input');
-        input.type = 'file';
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        input.files = dataTransfer.files;
-        handleFileUpload({ target: input } as unknown as React.ChangeEvent<HTMLInputElement>, value, handleWorkbookProcessed);
+        try {
+          // Read the file and process it
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const data = event.target?.result;
+              if (!data) {
+                throw new Error('Failed to read file data');
+              }
+
+              const workbook = XLSX.read(data, { type: 'binary' });
+              const processedSections = processWorkbook(workbook, value);
+              if (processedSections.length === 0) {
+                throw new Error('No valid sections found in the Excel file. Please check the debug information below for details.');
+              }
+              setSections(processedSections);
+              setActiveContentType(ContentType.SECTIONS);
+            } catch (err) {
+              console.error('Error processing sheet:', err);
+              // If there's an error, fall back to the original file upload method
+              const input = document.createElement('input');
+              input.type = 'file';
+              const dataTransfer = new DataTransfer();
+              dataTransfer.items.add(file);
+              input.files = dataTransfer.files;
+              handleFileUpload({ target: input } as unknown as React.ChangeEvent<HTMLInputElement>, value, handleWorkbookProcessed);
+            }
+          };
+          reader.readAsBinaryString(file);
+        } catch (err) {
+          console.error('Error reading file:', err);
+          // If there's an error reading the file, fall back to the original method
+          const input = document.createElement('input');
+          input.type = 'file';
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          input.files = dataTransfer.files;
+          handleFileUpload({ target: input } as unknown as React.ChangeEvent<HTMLInputElement>, value, handleWorkbookProcessed);
+        }
       }
     }
   };
